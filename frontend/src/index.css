@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#060b13] text-slate-100 font-sans;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* Tactical Command Center Glassmorphic Panels */
+.tactical-card {
+  background: rgba(13, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 98, 168, 0.25);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+.tactical-card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tactical-card-hover:hover {
+  border-color: rgba(0, 210, 255, 0.45);
+  box-shadow: 0 0 25px rgba(0, 210, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Radar Scan Line Animation for CCTV Feed / DNA Scanner */
+@keyframes radarSweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(1000%);
+  }
+}
+
+.radar-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00f2fe, transparent);
+  box-shadow: 0 0 10px #00f2fe;
+  animation: radarSweep 3.5s linear infinite;
+  opacity: 0.75;
+}
+
+/* Custom Scrollbar for Terminal / Incident Logs */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(6, 11, 19, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 98, 168, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 210, 255, 0.6);
+}

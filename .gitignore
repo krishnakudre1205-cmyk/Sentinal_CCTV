@@ -1,0 +1,69 @@
+# Environment & Secret files
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+credentials
+password.txt
+database.secrets
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# Node & Frontend dependencies/build
+node_modules/
+**/node_modules/
+dist/
+dist-ssr/
+build/
+.oxc/
+
+# Databases & Media Storage
+uploads/
+**/uploads/
+*.db
+*.sqlite
+*.sqlite3
+sentinelfusion.db
+
+# AI / Model weights (downloaded at runtime)
+*.pt
+*.onnx
+*.engine
+*.weights
+
+# Video files
+*.mp4
+*.avi
+*.mov
+*.webm
+*.mkv
+
+# Logs & Temporary files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# IDE, OS, & AI Agent internal files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.gemini/
+.agents/
+brain/
+scratch/
