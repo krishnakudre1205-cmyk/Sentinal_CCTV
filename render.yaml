@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: sentinelfusion-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://frontend-mauve-two-o07mq4dunt.vercel.app
+      - key: FRONTEND_URL
+        value: https://frontend-mauve-two-o07mq4dunt.vercel.app
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: 3.10.12
