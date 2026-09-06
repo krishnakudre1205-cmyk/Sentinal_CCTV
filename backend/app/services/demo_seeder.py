@@ -1,4 +1,5 @@
 import os
+import json
 import uuid
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -119,8 +120,8 @@ def execute_full_demo_seeding(db: Session) -> dict:
                 detection_confidence=0.95,
                 latitude=lat,
                 longitude=lon,
-                snapshot_url="/uploads/sample_market_cctv.mp4",
-                plate_crop_url="/uploads/plate_crops/sample_crop.jpg",
+                snapshot_url="/uploads/snapshots/snap_demo_bus.jpg",
+                plate_crop_url="/uploads/plate_crops/plate_demo_bus.jpg",
                 timestamp=s_time
             )
             db.add(det)
@@ -131,7 +132,12 @@ def execute_full_demo_seeding(db: Session) -> dict:
     if not existing_id:
         v_identity = VehicleIdentity(
             identity_id=f"VDNA-{target_plate}",
-            vehicle_dna=f"BUS|WHITE|{target_plate}|0.96|128DIM",
+            vehicle_dna=json.dumps({
+                "plate_number": target_plate,
+                "vehicle_type": "bus",
+                "color": "white",
+                "visual_embedding": [0.1] * 128
+            }),
             plate_number=target_plate,
             vehicle_type="bus",
             color="white",
@@ -155,8 +161,8 @@ def execute_full_demo_seeding(db: Session) -> dict:
         "camera_id": 1,
         "latitude": 28.6139,
         "longitude": 77.2090,
-        "snapshot_url": "/uploads/sample_market_cctv.mp4",
-        "plate_crop_url": "/uploads/plate_crops/sample_crop.jpg",
+        "snapshot_url": "/uploads/snapshots/snap_demo_bus.jpg",
+        "plate_crop_url": "/uploads/plate_crops/plate_demo_bus.jpg",
         "dna_id": f"VDNA-{target_plate}"
     }
     alert_result = alert_engine.evaluate_detection(sim_detection, db=db)

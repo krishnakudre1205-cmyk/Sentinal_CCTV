@@ -19,9 +19,8 @@ import {
 import StatusBadge from './StatusBadge';
 import CrossCameraTimeline from './CrossCameraTimeline';
 import GISRouteMap from './GISRouteMap';
-import apiService from '../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+import EvidenceImage from './EvidenceImage';
+import apiService, { getMediaUrl } from '../services/api';
 
 export const VehicleSearch = ({ vehicles = [], onSearch, isLoading }) => {
   const [query, setQuery] = useState('GJ01AB1234');
@@ -64,7 +63,6 @@ export const VehicleSearch = ({ vehicles = [], onSearch, isLoading }) => {
     }
   };
 
-  // Execute ANPR Search via API
   const handleANPRSearch = async (searchQuery) => {
     if (!searchQuery || !searchQuery.trim()) return;
     setIsSearching(true);
@@ -99,12 +97,6 @@ export const VehicleSearch = ({ vehicles = [], onSearch, isLoading }) => {
     } else if (onSearch) {
       onSearch(query);
     }
-  };
-
-  const resolveUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    return `${API_BASE_URL}${path}`;
   };
 
   return (
@@ -333,21 +325,16 @@ export const VehicleSearch = ({ vehicles = [], onSearch, isLoading }) => {
                       Vehicle ROI Snapshot
                     </span>
                     <div
-                      onClick={() => setActivePreviewImage(resolveUrl(selectedResult.evidence_frame))}
-                      className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer flex items-center justify-center"
+                      onClick={() => setActivePreviewImage(getMediaUrl(selectedResult.snapshot_url || selectedResult.evidence_frame))}
+                      className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer"
                     >
-                      {selectedResult.evidence_frame ? (
-                        <img
-                          src={resolveUrl(selectedResult.evidence_frame)}
-                          alt="Vehicle Evidence"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="text-center p-4 text-slate-500 font-mono text-xs">
-                          No Vehicle Snapshot Image Available
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <EvidenceImage
+                        src={getMediaUrl(selectedResult.snapshot_url || selectedResult.evidence_frame)}
+                        alt="Vehicle ROI Snapshot Evidence"
+                        fallbackText="Vehicle Snapshot Unavailable"
+                        className="w-full h-full"
+                      />
+                      <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                         <Maximize2 className="w-6 h-6 text-white" />
                       </div>
                     </div>
@@ -360,21 +347,16 @@ export const VehicleSearch = ({ vehicles = [], onSearch, isLoading }) => {
                       Cropped License Plate OCR
                     </span>
                     <div
-                      onClick={() => setActivePreviewImage(resolveUrl(selectedResult.plate_crop_url))}
-                      className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer flex items-center justify-center"
+                      onClick={() => setActivePreviewImage(getMediaUrl(selectedResult.plate_crop_url))}
+                      className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer"
                     >
-                      {selectedResult.plate_crop_url ? (
-                        <img
-                          src={resolveUrl(selectedResult.plate_crop_url)}
-                          alt="Plate Crop"
-                          className="w-full h-full object-contain bg-black p-2 group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="text-center p-4 text-slate-500 font-mono text-xs">
-                          Cropped Plate Image Saved to /uploads
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <EvidenceImage
+                        src={getMediaUrl(selectedResult.plate_crop_url)}
+                        alt="Cropped License Plate OCR"
+                        fallbackText="Plate Crop Unavailable"
+                        className="w-full h-full"
+                      />
+                      <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                         <Maximize2 className="w-6 h-6 text-white" />
                       </div>
                     </div>
@@ -415,7 +397,7 @@ export const VehicleSearch = ({ vehicles = [], onSearch, isLoading }) => {
                       <MapPin className="w-4 h-4 text-cyan-400" />
                       Location: {selectedResult.location_name}
                     </span>
-                    <span>Geo: [{selectedResult.latitude?.toFixed(4)}, {selectedResult.longitude?.toFixed(4)}]</span>
+                    <span>Geo: [{Number(selectedResult.latitude || 28.6139).toFixed(4)}, {Number(selectedResult.longitude || 77.2090).toFixed(4)}]</span>
                   </div>
                 </div>
 

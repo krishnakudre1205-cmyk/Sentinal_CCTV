@@ -296,5 +296,28 @@ class ANPREngine:
         }
 
 
+def ensure_sample_evidence_images():
+    """Ensures default sample snapshot and plate crop JPG images exist on disk."""
+    snap_demo_path = os.path.join(SNAPSHOT_DIR, "snap_demo_bus.jpg")
+    crop_demo_path = os.path.join(PLATE_CROP_DIR, "plate_demo_bus.jpg")
+
+    if not os.path.exists(snap_demo_path):
+        img = np.full((360, 640, 3), (45, 45, 50), dtype=np.uint8)
+        cv2.rectangle(img, (120, 100), (520, 280), (200, 160, 20), -1)
+        cv2.rectangle(img, (220, 220), (420, 260), (20, 20, 20), -1)
+        cv2.putText(img, "GJ01AB1234", (240, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 255), 2)
+        cv2.putText(img, "SENTINELFUSION EVIDENCE SNAPSHOT", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 210, 255), 1)
+        cv2.imwrite(snap_demo_path, img)
+
+    if not os.path.exists(crop_demo_path):
+        crop = np.full((80, 280, 3), (240, 240, 240), dtype=np.uint8)
+        cv2.rectangle(crop, (0, 0), (279, 79), (0, 0, 0), 3)
+        cv2.putText(crop, "IND", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 0, 0), 2)
+        cv2.putText(crop, "GJ01AB1234", (55, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 0), 3)
+        cv2.imwrite(crop_demo_path, crop)
+
+
+ensure_sample_evidence_images()
+
 # Singleton instance
 anpr_service = ANPREngine()

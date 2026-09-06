@@ -1,9 +1,9 @@
 import uuid
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy import or_
 
 from app.models.watchlist import WatchlistItem
 from app.models.alert import Alert
@@ -139,8 +139,52 @@ class AlertEngine:
         if not matched_target:
             return None
 
-        # MATCH FOUND! Generate Alert Data Structure
         cam_id = detection_data.get("camera_id") or 1
+
+        # IDEMPOTENT DEDUPLICATION: Check if recent alert exists for same plate and camera
+        recent_cutoff_utc = datetime.utcnow() - timedelta(minutes=5)
+        recent_cutoff_local = datetime.now() - timedelta(minutes=5)
+        recent_alert = (
+            db.query(Alert)
+            .filter(
+                Alert.plate == plate,
+                Alert.camera_id == cam_id,
+                or_(
+                    Alert.created_at >= recent_cutoff_utc,
+                    Alert.created_at >= recent_cutoff_local
+                )
+            )
+            .order_by(Alert.id.desc())
+            .first()
+        )
+        if recent_alert:
+            return {
+                "id": recent_alert.id,
+                "alert_id": recent_alert.alert_id,
+                "title": recent_alert.title,
+                "alert_type": recent_alert.alert_type,
+                "priority": recent_alert.priority,
+                "severity": recent_alert.priority,
+                "message": recent_alert.message,
+                "vehicle": recent_alert.vehicle,
+                "plate": recent_alert.plate,
+                "license_plate": recent_alert.plate,
+                "camera_id": recent_alert.camera_id,
+                "camera_name": recent_alert.camera_name,
+                "location": recent_alert.location,
+                "latitude": recent_alert.latitude,
+                "longitude": recent_alert.longitude,
+                "confidence": recent_alert.confidence,
+                "evidence_image": recent_alert.evidence_image,
+                "snapshot_url": recent_alert.snapshot_url,
+                "plate_crop_url": recent_alert.plate_crop_url,
+                "dna_id": recent_alert.dna_id,
+                "is_acknowledged": False,
+                "timestamp": recent_alert.created_at.isoformat() if recent_alert.created_at else datetime.now().isoformat(),
+                "created_at": recent_alert.created_at.isoformat() if recent_alert.created_at else datetime.now().isoformat()
+            }
+
+        # MATCH FOUND! Generate Alert Data Structure
         cam_obj = db.query(Camera).filter(Camera.id == cam_id).first()
         cam_name = cam_obj.camera_name if cam_obj else f"CCTV Camera #{cam_id}"
         loc_name = cam_obj.location_name if cam_obj else "City Perimeter Checkpoint"
@@ -156,8 +200,8 @@ class AlertEngine:
         v_color = detection_data.get("color") or matched_target.vehicle_color or ""
         v_desc = f"{v_color} {v_type}".strip().title()
 
-        snapshot_url = detection_data.get("snapshot_url") or "/uploads/sample_market_cctv.mp4"
-        plate_crop_url = detection_data.get("plate_crop_url") or "/uploads/plate_crops/sample_crop.jpg"
+        snapshot_url = detection_data.get("snapshot_url") or "/uploads/snapshots/snap_demo_bus.jpg"
+        plate_crop_url = detection_data.get("plate_crop_url") or "/uploads/plate_crops/plate_demo_bus.jpg"
         confidence = round(float(detection_data.get("plate_confidence") or detection_data.get("confidence") or 0.92), 3)
 
         uid = f"ALT-{uuid.uuid4().hex[:8].upper()}"

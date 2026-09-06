@@ -16,31 +16,24 @@ import {
   RefreshCw
 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
-import apiService from '../services/api';
+import EvidenceImage from './EvidenceImage';
+import apiService, { getMediaUrl } from '../services/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
 
-const resolveUrl = (path) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  return `${API_BASE_URL}${path}`;
-};
-
 export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) => {
   const [selectedPriority, setSelectedPriority] = useState('ALL');
-  const [wsStatus, setWsStatus] = useState('connecting'); // 'connected', 'connecting', 'disconnected'
+  const [wsStatus, setWsStatus] = useState('connecting');
   const [localAlerts, setLocalAlerts] = useState(alerts);
   const [isSimulating, setIsSimulating] = useState(false);
   const [activePreviewImage, setActivePreviewImage] = useState(null);
   const wsRef = useRef(null);
 
-  // Sync props alerts
   useEffect(() => {
     setLocalAlerts(alerts);
   }, [alerts]);
 
-  // WebSocket Live Connection Listener
   useEffect(() => {
     let ws = null;
     let reconnectTimeout = null;
@@ -88,7 +81,6 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
     };
   }, []);
 
-  // Demo Simulation Trigger
   const handleSimulateStolenVehicle = async () => {
     setIsSimulating(true);
     try {
@@ -104,7 +96,6 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
     }
   };
 
-  // Filter alerts by priority
   const filteredAlerts = localAlerts.filter((alert) => {
     if (selectedPriority === 'ALL') return true;
     const prio = (alert.priority || alert.severity || 'HIGH').toUpperCase();
@@ -141,7 +132,6 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
 
           {/* WebSocket Status & Simulation Controls */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Live WS Status Pill */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-police-950 border border-police-800 font-mono text-xs">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
@@ -155,7 +145,6 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
               </span>
             </div>
 
-            {/* Hackathon Stolen Vehicle Demo Trigger */}
             <button
               onClick={handleSimulateStolenVehicle}
               disabled={isSimulating}
@@ -221,6 +210,9 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
             const isHigh = prio === 'HIGH';
             const isAcknowledged = alert.is_acknowledged;
 
+            const snapUrl = getMediaUrl(alert.snapshot_url || alert.evidence_image);
+            const cropUrl = getMediaUrl(alert.plate_crop_url);
+
             return (
               <div
                 key={alert.id || alert.alert_id}
@@ -252,7 +244,6 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-police-800">
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        {/* Priority Badge */}
                         <span
                           className={`font-mono text-xs font-bold px-2.5 py-0.5 rounded-md uppercase border ${
                             isCritical
@@ -337,15 +328,16 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
                       <div className="space-y-1">
                         <span className="text-[10px] text-slate-400 uppercase font-bold block">Snapshot Evidence</span>
                         <div
-                          onClick={() => setActivePreviewImage(resolveUrl(alert.snapshot_url || alert.evidence_image))}
-                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group flex items-center justify-center cursor-pointer"
+                          onClick={() => setActivePreviewImage(snapUrl)}
+                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer"
                         >
-                          <img
-                            src={resolveUrl(alert.snapshot_url || alert.evidence_image || '/uploads/sample_market_cctv.mp4')}
+                          <EvidenceImage
+                            src={snapUrl}
                             alt="Evidence Snapshot"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            fallbackText="Snapshot Unavailable"
+                            className="w-full h-full"
                           />
-                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                             <Maximize2 className="w-4 h-4 text-white" />
                           </div>
                         </div>
@@ -354,15 +346,16 @@ export const RealTimeAlertCenter = ({ alerts = [], onAcknowledge, onRefresh }) =
                       <div className="space-y-1">
                         <span className="text-[10px] text-slate-400 uppercase font-bold block">Plate Crop</span>
                         <div
-                          onClick={() => setActivePreviewImage(resolveUrl(alert.plate_crop_url || '/uploads/plate_crops/sample_crop.jpg'))}
-                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group flex items-center justify-center cursor-pointer"
+                          onClick={() => setActivePreviewImage(cropUrl)}
+                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer"
                         >
-                          <img
-                            src={resolveUrl(alert.plate_crop_url || '/uploads/plate_crops/sample_crop.jpg')}
+                          <EvidenceImage
+                            src={cropUrl}
                             alt="Plate Crop"
-                            className="w-full h-full object-contain p-1 bg-black group-hover:scale-105 transition-transform"
+                            fallbackText="Plate Crop Unavailable"
+                            className="w-full h-full"
                           />
-                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                             <Maximize2 className="w-4 h-4 text-white" />
                           </div>
                         </div>

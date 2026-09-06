@@ -319,7 +319,7 @@ export const CameraManagement = ({ cameras = [], onRefresh }) => {
                   <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[10px] font-mono text-slate-400 bg-police-950/80 px-2 py-0.5 rounded border border-police-800/80">
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-cyan-400" />
-                      {cam.latitude?.toFixed(4)}, {cam.longitude?.toFixed(4)}
+                      {Number(cam.latitude || 28.6139).toFixed(4)}, {Number(cam.longitude || 77.2090).toFixed(4)}
                     </span>
                     <span className="text-emerald-400">Adapter: Active</span>
                   </div>
@@ -398,7 +398,7 @@ export const CameraManagement = ({ cameras = [], onRefresh }) => {
                     <td className="px-4 py-3">
                       <div>{cam.location_name}</div>
                       <span className="text-[10px] text-slate-500 font-mono">
-                        ({cam.latitude?.toFixed(4)}, {cam.longitude?.toFixed(4)})
+                        ({Number(cam.latitude || 28.6139).toFixed(4)}, {Number(cam.longitude || 77.2090).toFixed(4)})
                       </span>
                     </td>
                     <td className="px-4 py-3">

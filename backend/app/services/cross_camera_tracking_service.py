@@ -78,12 +78,19 @@ class CrossCameraTrackingService:
         target_plate = identity_rec.plate_number if identity_rec else target_query
         target_type = identity_rec.vehicle_type if identity_rec else "bus" if "1234" in target_query else "car"
         target_color = identity_rec.color if identity_rec else "white" if "1234" in target_query else "black"
-        target_dna = json.loads(identity_rec.vehicle_dna) if identity_rec and identity_rec.vehicle_dna else {
-            "plate_number": target_plate,
-            "vehicle_type": target_type,
-            "color": target_color,
-            "visual_embedding": [0.1] * 128
-        }
+        target_dna = None
+        if identity_rec and identity_rec.vehicle_dna:
+            try:
+                target_dna = json.loads(identity_rec.vehicle_dna)
+            except Exception:
+                target_dna = None
+        if not target_dna or not isinstance(target_dna, dict):
+            target_dna = {
+                "plate_number": target_plate,
+                "vehicle_type": target_type,
+                "color": target_color,
+                "visual_embedding": [0.1] * 128
+            }
 
         # 2. Query vehicle detections joined with camera details
         db_detections = (

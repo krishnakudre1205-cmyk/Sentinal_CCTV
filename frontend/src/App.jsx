@@ -27,31 +27,51 @@ function App() {
     setIsRefreshing(true);
     try {
       // 1. Health check
-      const healthRes = await apiService.getHealth();
-      setSystemHealth(healthRes.data || { status: 'offline' });
+      try {
+        const healthRes = await apiService.getHealth();
+        setSystemHealth(healthRes?.data || { status: 'online' });
+      } catch {
+        setSystemHealth({ status: 'offline' });
+      }
 
       // 2. Fetch cameras
-      const camRes = await apiService.getCameras();
-      if (camRes.success && Array.isArray(camRes.data)) {
-        setCameras(camRes.data);
+      try {
+        const camRes = await apiService.getCameras();
+        if (camRes?.success && Array.isArray(camRes.data)) {
+          setCameras(camRes.data);
+        }
+      } catch (err) {
+        console.warn('Backend cameras offline:', err);
       }
 
       // 3. Fetch vehicles
-      const vehRes = await apiService.getVehicles();
-      if (vehRes.success && Array.isArray(vehRes.data)) {
-        setVehicles(vehRes.data);
+      try {
+        const vehRes = await apiService.getVehicles();
+        if (vehRes?.success && Array.isArray(vehRes.data)) {
+          setVehicles(vehRes.data);
+        }
+      } catch (err) {
+        console.warn('Backend vehicles offline:', err);
       }
 
       // 4. Fetch watchlist
-      const watchRes = await apiService.getWatchlist();
-      if (watchRes.success && Array.isArray(watchRes.data)) {
-        setWatchlist(watchRes.data);
+      try {
+        const watchRes = await apiService.getWatchlist();
+        if (watchRes?.success && Array.isArray(watchRes.data)) {
+          setWatchlist(watchRes.data);
+        }
+      } catch (err) {
+        console.warn('Backend watchlist offline:', err);
       }
 
       // 5. Fetch alerts
-      const alertRes = await apiService.getAlerts();
-      if (alertRes.success && Array.isArray(alertRes.data)) {
-        setAlerts(alertRes.data);
+      try {
+        const alertRes = await apiService.getAlerts();
+        if (alertRes?.success && Array.isArray(alertRes.data)) {
+          setAlerts(alertRes.data);
+        }
+      } catch (err) {
+        console.warn('Backend alerts offline:', err);
       }
 
       setLastUpdated(new Date().toLocaleTimeString());
@@ -99,8 +119,13 @@ function App() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  const activeCamerasCount = cameras.filter((c) => c.status === 'ACTIVE' || !c.status).length;
-  const unackAlertsCount = alerts.filter((a) => !a.is_acknowledged).length;
+  const safeCameras = Array.isArray(cameras) ? cameras : [];
+  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+  const safeWatchlist = Array.isArray(watchlist) ? watchlist : [];
+  const safeVehicles = Array.isArray(vehicles) ? vehicles : [];
+
+  const activeCamerasCount = safeCameras.filter((c) => c.status === 'ACTIVE' || !c.status).length;
+  const unackAlertsCount = safeAlerts.filter((a) => !a.is_acknowledged).length;
 
   return (
     <div className="flex h-screen bg-[#060b13] text-slate-100 font-sans overflow-hidden select-none">

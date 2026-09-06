@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+
+export const getMediaUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+
+  // Normalize Windows backslashes or relative paths
+  let clean = path.replace(/\\/g, '/');
+  if (clean.includes('/uploads/')) {
+    const idx = clean.indexOf('/uploads/');
+    clean = clean.substring(idx);
+  } else if (!clean.startsWith('/')) {
+    clean = '/uploads/' + clean;
+  }
+
+  return `${API_BASE_URL}${clean}`;
+};
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

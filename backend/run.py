@@ -33,6 +33,7 @@ if __name__ == "__main__":
         print(f"[*] Solution Options:")
         print(f"    1. Stop the existing process using port {port}")
         print(f"    2. Run with an alternate port: python run.py {port + 1}\n")
+        sys.exit(1)
 
     print(f"[*] Starting {settings.PROJECT_NAME} Backend on http://{host}:{port}")
     print(f"[*] Swagger Documentation: http://{host}:{port}/docs")

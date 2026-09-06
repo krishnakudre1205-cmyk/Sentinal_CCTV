@@ -488,7 +488,7 @@ export const DetectionResults = ({ cameras = [] }) => {
                         <div className="text-[11px] font-mono text-slate-400 mt-1 flex flex-wrap items-center gap-2">
                           <span>Frame #{det.frame_number}</span>
                           <span>•</span>
-                          <span>T: {det.video_timestamp_secs?.toFixed(1)}s</span>
+                          <span>T: {Number(det.video_timestamp_secs || 0).toFixed(1)}s</span>
                           <span>•</span>
                           <span className="text-slate-500">
                             BBox: [{bbox?.x1}, {bbox?.y1}, {bbox?.x2}, {bbox?.y2}]

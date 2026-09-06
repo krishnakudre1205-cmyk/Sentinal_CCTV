@@ -26,48 +26,16 @@ UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
+from app.api.cameras import ensure_sample_mp4_file
+
 def ensure_sample_demo_video_if_missing(file_path: str):
     """
-    Generates a realistic CCTV traffic video sequence for AI detection if no video file exists.
-    Guarantees 100% demo reliability for hackathons.
+    Generates a dynamic continuous-motion CCTV traffic video sequence for AI detection.
+    Guarantees 100% demo reliability and continuous frame motion for hackathons.
     """
-    if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
-        return
+    filename = os.path.basename(file_path)
+    ensure_sample_mp4_file(filename)
 
-    print(f"[Info] Generating sample CCTV traffic video for AI detection: {file_path}")
-    
-    img_frame = None
-    try:
-        url = "https://ultralytics.com/images/bus.jpg"
-        img_bytes = requests.get(url, timeout=5).content
-        img_np = np.frombuffer(img_bytes, np.uint8)
-        img_frame = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
-    except Exception:
-        img_frame = None
-
-    if img_frame is None:
-        width, height = 1280, 720
-        img_frame = np.full((height, width, 3), (40, 40, 45), dtype=np.uint8)
-        cv2.rectangle(img_frame, (0, 160), (width, 580), (55, 55, 60), -1)
-        cv2.line(img_frame, (0, 370), (width, 370), (220, 220, 220), 3)
-        cv2.rectangle(img_frame, (200, 220), (500, 420), (220, 160, 20), -1)
-        cv2.rectangle(img_frame, (600, 300), (800, 450), (200, 200, 200), -1)
-        cv2.circle(img_frame, (150, 120), 12, (180, 190, 220), -1)
-        cv2.rectangle(img_frame, (140, 135), (160, 175), (80, 160, 90), -1)
-
-    height, width, _ = img_frame.shape
-    fps = 10
-    duration_secs = 3
-    total_frames = fps * duration_secs
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    writer = cv2.VideoWriter(file_path, fourcc, fps, (width, height))
-
-    for _ in range(total_frames):
-        writer.write(img_frame)
-
-    writer.release()
-    print(f"[Info] CCTV demo video ready at: {file_path}")
 
 
 def run_video_detection_pipeline(camera_id: int, source_url: str, db: Session):

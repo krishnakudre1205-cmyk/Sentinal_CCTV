@@ -17,14 +17,8 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-
-const resolveUrl = (path) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  return `${API_BASE_URL}${path}`;
-};
+import EvidenceImage from './EvidenceImage';
+import { getMediaUrl } from '../services/api';
 
 export const CrossCameraTimeline = ({ journeyData, isLoading }) => {
   const [selectedNode, setSelectedNode] = useState(null);
@@ -206,14 +200,15 @@ export const CrossCameraTimeline = ({ journeyData, isLoading }) => {
         <div className="relative border-l-2 border-police-700/80 ml-4 pl-6 space-y-6">
           {timeline.map((node) => {
             const isSelected = selectedNode?.sequence_index === node.sequence_index;
+            const snapUrl = getMediaUrl(node.evidence_images?.snapshot_url);
+            const cropUrl = getMediaUrl(node.evidence_images?.plate_crop_url);
+
             return (
               <div key={node.sequence_index} className="relative group">
-                {/* Node Bullet Point */}
                 <div className="absolute -left-[31px] top-4 w-5 h-5 rounded-full bg-police-950 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_10px_rgba(0,210,255,0.4)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-300" />
                 </div>
 
-                {/* Card Container */}
                 <div
                   onClick={() => setSelectedNode(node)}
                   className={`tactical-card rounded-2xl p-5 border transition-all cursor-pointer ${
@@ -248,7 +243,6 @@ export const CrossCameraTimeline = ({ journeyData, isLoading }) => {
 
                   {/* Telemetry Metrics & Evidence Images Grid */}
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-12 gap-4 text-xs font-mono">
-                    {/* Spatiotemporal Telemetry */}
                     <div className="md:col-span-7 space-y-3">
                       <div className="grid grid-cols-3 gap-2">
                         <div className="p-2.5 rounded-xl bg-police-950/80 border border-police-800">
@@ -274,7 +268,6 @@ export const CrossCameraTimeline = ({ journeyData, isLoading }) => {
                         </div>
                       </div>
 
-                      {/* Component Breakdown Mini Bar */}
                       {node.component_breakdown && (
                         <div className="p-3 rounded-xl bg-police-950/90 border border-police-800 space-y-2">
                           <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
@@ -300,16 +293,17 @@ export const CrossCameraTimeline = ({ journeyData, isLoading }) => {
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            setActivePreviewImage(resolveUrl(node.evidence_images.snapshot_url));
+                            setActivePreviewImage(snapUrl);
                           }}
-                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group flex items-center justify-center cursor-pointer"
+                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer"
                         >
-                          <img
-                            src={resolveUrl(node.evidence_images.snapshot_url)}
+                          <EvidenceImage
+                            src={snapUrl}
                             alt="Vehicle Evidence"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            fallbackText="Snapshot Unavailable"
+                            className="w-full h-full"
                           />
-                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                             <Maximize2 className="w-4 h-4 text-white" />
                           </div>
                         </div>
@@ -320,16 +314,17 @@ export const CrossCameraTimeline = ({ journeyData, isLoading }) => {
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            setActivePreviewImage(resolveUrl(node.evidence_images.plate_crop_url));
+                            setActivePreviewImage(cropUrl);
                           }}
-                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group flex items-center justify-center cursor-pointer"
+                          className="aspect-video bg-police-950 rounded-xl overflow-hidden border border-police-700 relative group cursor-pointer"
                         >
-                          <img
-                            src={resolveUrl(node.evidence_images.plate_crop_url)}
+                          <EvidenceImage
+                            src={cropUrl}
                             alt="Plate Crop"
-                            className="w-full h-full object-contain p-1 bg-black group-hover:scale-105 transition-transform"
+                            fallbackText="Plate Crop Unavailable"
+                            className="w-full h-full"
                           />
-                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="absolute inset-0 bg-police-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                             <Maximize2 className="w-4 h-4 text-white" />
                           </div>
                         </div>

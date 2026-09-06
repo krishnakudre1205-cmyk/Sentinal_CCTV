@@ -85,7 +85,7 @@ class AIDetectionEngine:
         detections = []
         try:
             target_ids = list(TARGET_CLASSES.keys())
-            results = self._model(frame, classes=target_ids, conf=self.confidence_threshold, verbose=False)
+            results = self._model(frame, imgsz=640, classes=target_ids, conf=self.confidence_threshold, verbose=False)
 
             if results and len(results) > 0:
                 boxes = results[0].boxes
@@ -189,7 +189,11 @@ class AIDetectionEngine:
         annotated_filename = f"annotated_cam_{camera_id}_{uuid.uuid4().hex[:6]}.mp4"
         annotated_filepath = os.path.join(output_dir, annotated_filename)
 
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # Use H.264 (avc1) for native HTML5 video playback compatibility in Chrome/Edge/Firefox
+        try:
+            fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        except Exception:
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out_fps = sample_fps if sample_fps > 0 else src_fps
         writer = cv2.VideoWriter(annotated_filepath, fourcc, out_fps, (src_width, src_height))
 

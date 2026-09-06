@@ -18,11 +18,21 @@ class Settings(BaseSettings):
     
     # Database Configuration (Absolute path to SQLite database inside backend directory)
     DATABASE_URL: str = f"sqlite:///{DEFAULT_DB_PATH}"
+    FRONTEND_URL: str = ""
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_url(cls, v: str) -> str:
+        if isinstance(v, str) and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
     
     # CORS Configuration
     CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
         "http://localhost:3000",
         "http://127.0.0.1:3000"
     ]
@@ -30,11 +40,16 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        origins = []
         if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",") if i.strip()]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+            origins = [i.strip() for i in v.split(",") if i.strip()]
+        elif isinstance(v, list):
+            origins = v
+        frontend_url = os.getenv("FRONTEND_URL")
+        if frontend_url and frontend_url not in origins:
+            origins.append(frontend_url.strip())
+        return origins if origins else ["*"]
+
     
     # MQTT Broker Settings (Future pipeline configuration)
     MQTT_BROKER_HOST: str = "localhost"
